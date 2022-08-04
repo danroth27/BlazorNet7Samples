@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 
 <div class="page">
     <div class="sidebar">
@@ -12,6 +13,7 @@
 
         <article class="content px-4">
             @Body
+            <p>History entry state: @NavigationManager.HistoryEntryState</p>
         </article>
     </main>
 </div>

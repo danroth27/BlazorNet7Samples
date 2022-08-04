@@ -1,4 +1,5 @@
 ﻿@page "/counter"
+@inject NavigationManager NavigationManager
 
 <PageTitle>Counter</PageTitle>
 
@@ -8,11 +9,17 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+<button class="btn btn-secondary" @onclick="NavigateWithState">Navigate with state</button>
+
 @code {
     private int currentCount = 0;
 
     private void IncrementCount()
     {
         currentCount++;
+    }
+
+    private void NavigateWithState() {
+        NavigationManager.NavigateTo("/", new NavigationOptions { HistoryEntryState = currentCount.ToString() });
     }
 }
