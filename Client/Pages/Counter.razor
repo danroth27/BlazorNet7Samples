@@ -19,7 +19,8 @@
         currentCount++;
     }
 
-    private void NavigateWithState() {
+    private void NavigateWithState()
+    {
         NavigationManager.NavigateTo("/", new NavigationOptions { HistoryEntryState = currentCount.ToString() });
     }
 }
