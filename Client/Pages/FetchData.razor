@@ -1,5 +1,6 @@
 ﻿@page "/fetchdata"
 @using BlazorNet7Samples.Shared
+@using Microsoft.AspNetCore.Components.QuickGrid
 @inject HttpClient Http
 
 <PageTitle>Weather forecast</PageTitle>
@@ -14,29 +15,16 @@
 }
 else
 {
-    @*<input @bind="search" @bind:after="UpdateWeather" @bind:event="oninput" />*@
-    <MyInput @bind-Value="search" @bind-Value:after="UpdateWeather" />
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in Forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <QuickGrid Items="Forecasts" ResizableColumns>
+        <PropertyColumn Property="f => f.Date" Format="MMM d" Sortable="true"/>
+        <PropertyColumn Property="f => f.TemperatureC" Title="Temp (C)" Sortable="true"/>
+        <PropertyColumn Property="f => f.TemperatureF" Title="Temp (F)" />
+        <PropertyColumn Property="f => f.Summary">
+            <ColumnOptions>
+                <MyInput @bind-Value="search" @bind-Value:after="UpdateWeather" />
+            </ColumnOptions>
+        </PropertyColumn>
+    </QuickGrid>
 }
 
 @code {
@@ -48,7 +36,8 @@ else
         await UpdateWeather();
     }
 
-    IEnumerable<WeatherForecast> Forecasts => forecasts.Where(f => f.Summary.Contains(search));
+    IQueryable<WeatherForecast> Forecasts =>
+        forecasts.Where(f => f.Summary.Contains(search)).AsQueryable();
 
     async Task UpdateWeather()
     {
