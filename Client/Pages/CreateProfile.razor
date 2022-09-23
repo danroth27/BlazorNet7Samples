@@ -1,0 +1,95 @@
+﻿@page "/create-profile"
+@using System.ComponentModel.DataAnnotations
+
+@inject IJSRuntime JS
+
+<PageTitle>Create profile</PageTitle>
+
+<h3>Create profile</h3>
+
+<EditForm EditContext="editContext" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="name" class="form-label">Full name</label>
+        <InputText id="name" class="form-control" @bind-Value="user.Name" />
+    </div>
+    <div>
+        <label for="dateOfBirth" class="form-label">Date of birth</label>
+         <InputDate id="dateOfBirth" class="form-control" @bind-Value="user.DateOfBirth" />
+    </div>
+    <div>
+        <label for="bio" class="form-label">Bio</label>
+        <InputTextArea id="bio" class="form-control" @bind-Value="user.Bio" />
+    </div>
+    <div>
+        <InputCheckbox id="subscribed" class="form-check-input" @bind-Value="user.IsSubscribed" />
+        <label for="subscribed" class="form-label">Subscribe to our newsletter</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+<NavigationLock OnBeforeInternalNavigation="ConfirmNavigation" ConfirmExternalNavigation />
+
+@if (profileSubmitted)
+{
+    <p>
+        <span style="color: green">Profile created successfully!</span>
+    </p>
+}
+
+@code {
+    private readonly User user;
+    private readonly EditContext editContext;
+    private bool profileSubmitted;
+
+    public CreateProfile()
+    {
+        user = new()
+            {
+                DateOfBirth = DateOnly.FromDateTime(DateTime.Now),
+                IsSubscribed = true,
+            };
+        editContext = new(user);
+        editContext.OnFieldChanged += ProfileModified;
+    }
+
+    private void Submit()
+    {
+        profileSubmitted = true;
+        editContext.MarkAsUnmodified();
+    }
+
+    private void ProfileModified(object? sender, FieldChangedEventArgs e)
+    {
+        profileSubmitted = false;
+    }
+
+    async Task ConfirmNavigation(LocationChangingContext context)
+    {
+        if (editContext.IsModified())
+        {
+            var isConfirmed = await JS.InvokeAsync<bool>("window.confirm", "Are you sure you want to leave this page?");
+
+            if (!isConfirmed)
+            {
+                context.PreventNavigation();
+            }
+        }
+    }
+
+    private class User
+    {
+        [Required]
+        public string? Name { get; set; }
+
+        [Required]
+        public DateOnly DateOfBirth { get; set; }
+
+        [Required(ErrorMessage = "C'mon, tell us about yourself!")]
+        public string? Bio { get; set; }
+
+        public bool IsSubscribed { get; set; }
+    }
+}
